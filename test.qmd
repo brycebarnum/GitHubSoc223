@@ -1,0 +1,12 @@
+---
+title: "my homework"
+format: html
+editor: visual
+embed-resources: true
+---
+
+## jedbjbdw
+
+```{r}
+mtcars
+```
