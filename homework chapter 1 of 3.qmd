@@ -1,0 +1,140 @@
+---
+title: "homework5"
+format: html
+editor: visual
+embed-resources: true
+---
+
+## Bryce Barnum
+
+## Homework 5
+
+## Question 1
+
+```{r}
+library(tidyverse)
+# Read in the data 
+exercise_data <- read_csv("https://raw.githubusercontent.com/vaiseys/dav-course/main/Data/visualize_data.csv")
+glimpse(exercise_data)
+
+```
+
+I think people with higher records of exercise will have higher BMI.
+
+```{r}
+cor(exercise_data$Exercise, exercise_data$BMI)
+```
+
+```{r}
+library(dbplyr)
+```
+
+```{r}
+ggplot(data = exercise_data, mapping = aes(x = Exercise, y = BMI)) + 
+  geom_point()
+```
+
+...
+
+## Question 2
+
+```{r}
+library(causact)
+glimpse(corruptDF)
+```
+
+```{r}
+?corruptDF
+```
+
+The CPI2017 represents "The Corruption Perceptions Index score for 2017" and captures how "corrupted" a country is on a 0-100 scale, 0 being highly corrupt and 100 being the complete opposite.
+
+The HDI2017 represents "The human development index score for 2017" and captures the measure of achievement of human development across different countries. Factors that contribute to this score are education, longevity, and income.
+
+## Question 3
+
+```{r}
+corruptDF
+```
+
+```{r}
+ggplot(data = corruptDF, mapping = aes(x = HDI2017, y = CPI2017)) + 
+  geom_point()
+```
+
+I see a positive correlation between HDI and CPI. The higher a country's CPI is, the higher a country's HDI is as.
+
+## Question 4
+
+```{r}
+ggplot(data = corruptDF, mapping = aes(x = HDI2017, y = CPI2017)) + 
+  geom_point() +
+labs(x = "HDI2017", y = "CPI2017",
+       title = "Relationship between HDI2017 and CPI2017") +  
+  geom_smooth(method = "lm", se = FALSE)
+```
+
+```{r}
+ggplot(data = corruptDF, mapping = aes(x = HDI2017, y = CPI2017)) + 
+  geom_point() +
+labs(x = "HDI2017", y = "CPI2017",
+       title = "Relationship between HDI2017 and CPI2017") +  
+  geom_smooth(method = "gam", se = FALSE)
+```
+
+After using both the "lm" and "gam" methods of geom_smooth(), I realized that the "gam" method, in my opinion, better suits the correlation more accurately. The "lm" method provides a more linear path while the "gam"method provides a more exponential path.
+
+## Question 5
+
+```{r}
+ggplot(data = corruptDF, mapping = aes(x = HDI2017, y = CPI2017, fill = region, color = region)) + 
+  geom_point(color = "navy", fill = "grey") +
+labs(x = "HDI2017", y = "CPI2017",
+       title = "Relationship between HDI2017 and CPI2017 by Region") +  
+  geom_smooth(method = "gam", se = FALSE)
+```
+
+```{r}
+ggplot(data = corruptDF, mapping = aes(x = HDI2017, y = CPI2017, fill = region, color = region)) + 
+  geom_point(color = "navy", fill = "grey") +
+labs(x = "HDI2017", y = "CPI2017",
+       title = "Relationship between HDI2017 and CPI2017 by Region") +  
+  geom_smooth(method = "gam", se = FALSE) +
+  facet_wrap(~ region, nrow = 2)
+```
+
+I wouldn't say the relationship was too cluttered, but when using the facet_wrap() function, we could see each regions relationship between CPI and HDI individually.
+
+## Question 6
+
+```{r}
+ggplot(data = corruptDF, mapping = aes(x = HDI2017, y = CPI2017, fill = region, color = region)) + 
+  geom_point(size = 1.8, color = "navy", fill = "grey") +
+labs(x = "HDI2017", y = "CPI2017",
+       title = "Relationship between HDI2017 and CPI2017 by Region") +  
+  geom_smooth(method = "gam", se = FALSE) +
+ scale_x_reverse()
+```
+
+Using the scale_x_reverse() function, I was able to change the regression of the graph from 0-100 to 100-0.
+
+## Question 7
+
+```{r}
+ggplot(data = corruptDF, mapping = aes(x = HDI2017, y = CPI2017, fill = region, color = region)) + 
+  geom_point(size = 1.8, color = "navy", fill = "grey") +
+labs(x = "HDI2017", y = "CPI2017",
+       title = "Relationship between HDI2017 and CPI2017",
+     subtitle = "Grouped by Region", 
+     caption = "The data comes from 174 observations, each observation 
+     being a country, where the relationship between the 
+     human devlopment index and corruption peceptions index exists.") +  
+  geom_smooth(method = "gam", se = FALSE) +
+  scale_x_reverse()
+```
+
+## Question 8
+
+```{r}
+ggsave("hdi_cpi_2017_plot.png")
+```
