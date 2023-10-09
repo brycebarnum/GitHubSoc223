@@ -1,0 +1,133 @@
+---
+title: "lecture 10/3"
+format: html
+editor: visual
+embed-resources: true
+---
+
+## Homework CHP 2 of 3 
+
+## Question 1
+
+```{r}
+library(tidyverse)
+
+# Read in the data 
+tv_ratings <- read_csv("https://raw.githubusercontent.com/vaiseys/dav-course/main/Data/tv_ratings.csv")
+
+# Glimpse the data 
+glimpse(tv_ratings)
+```
+
+```{r}
+tv_long <- tv_ratings %>% 
+  group_by(title) %>% 
+  summarise(num_seasons = n()) %>% 
+  ungroup() %>% 
+  left_join(tv_ratings, by = "title") 
+
+tv_long <- tv_long %>% 
+  filter(num_seasons >= 5)
+```
+
+```{r}
+ggplot(data = tv_long,
+       aes(x = seasonNumber,
+           y = av_rating)) +
+geom_line(aes(group=title))
+```
+
+There appears to be higher "av_rating" during the earlier seasons of shows, specifically between seasons 2-3.
+
+## Question 2
+
+```{r}
+ggplot(data = tv_long,
+       aes(x = seasonNumber,
+           y = av_rating)) +
+geom_line(aes(group=title)) +
+  facet_wrap(~ genres)
+```
+
+Shows that have drama, action and drama, or action crime and drama seem to last the longest. Ratings don't seem to change too much across seasons. The drama, family, fantasy TV show whose ratings plummeted was "Are You Afraid of the Dark?"
+
+## Question 3
+
+```{r}
+tv_buss <- tv_ratings |>
+  filter(av_rating >= 9) 
+
+ggplot(data = tv_buss,
+       mapping = aes(x = genres)) +
+  geom_bar() +
+coord_flip()
+```
+
+```{r}
+?coord_flip()
+```
+
+"coord_flip" flips the x and y coordinates, in other words converting horizontal to vertical and vise versa. The drama genre has the most top rated shows.
+
+## Question 4
+
+```{r}
+comedies_dramas <- tv_ratings %>% 
+  mutate(is_comedy = if_else(str_detect(genres, "Comedy"), 
+                             1, 
+                             0)) %>% # If it contains the word comedy then 1, else 0
+  filter(is_comedy == 1 | genres == "Drama") %>% # Keep comedies and dramas
+  mutate(genres = if_else(genres == "Drama", # Make it so that we only have those two genres
+                          "Drama", 
+                          "Comedy"))
+
+glimpse(comedies_dramas)
+```
+
+```{r}
+ggplot(data = comedies_dramas,
+       mapping = aes(x = av_rating, color = genres)) +
+  geom_density()
+
+```
+
+Your prediction makes a fair point, as dramas rate around the same as comedies. Actually, comedies rate slightly higher than dramas to be exact.
+
+## Question 5
+
+```{r}
+ggplot(data = comedies_dramas, 
+       mapping = aes(x = av_rating, fill = genres)) +
+  geom_histogram(binwidth = 0.15, boundary = 0.2, color = "navy")
+```
+
+There are a lot more comedies with a higher av_rating than dramas. With this graph we get to see how comedies and dramas stack on top of each other.
+
+```{r}
+ggplot(data = comedies_dramas, 
+       mapping = aes(x = av_rating, fill = genres)) +
+  geom_histogram(binwidth = 0.2, boundary = 0.2, color = "navy") +
+  geom_freqpoly()
+```
+
+After making the "geom_freqpoly" graph, I noticed a combination between the first and second graphs I created, as if they had a baby.
+
+Of the three plots, I would personally say the "geom_freqpoly" graph is the best. It still shows the count of the dramas and comedies, while also showing where the two genres overlap in terms of similar rating counts, such as around ratings 7 and 10.
+
+## Question 6
+
+```{r}
+ggplot(data = comedies_dramas,
+       mapping = aes(x = av_rating, y = share)) +
+  geom_bin_2d()
+```
+
+The additional information in comparison to a scatter plot is that it can help prevent over-plotting by showing where most shows are located depending on how dark the shade of blue is.
+
+```{r}
+ggplot(data = comedies_dramas,
+       mapping = aes(x = av_rating, y = share, fill = genres)) +
+  geom_bin_2d()
+```
+
+Using the fill aesthetic, I was able to distinguish the distribution by genre. Drama had the biggest outlier with the show Dekalog.
