@@ -1,0 +1,166 @@
+---
+title: "homework dv 5"
+format: html
+editor: visual
+embed-resources: true
+---
+
+## Homework DV 5
+
+```{r}
+library(tidyverse)
+# Read in the data 
+wncaa <- read_csv("https://raw.githubusercontent.com/vaiseys/dav-course/main/Data/wncaa.csv")
+
+# Glimpse the data 
+glimpse(wncaa)
+
+```
+
+## Question 1
+
+```{r}
+wncaa_champ <-  wncaa %>%
+  filter(tourney_finish == "Champ")
+```
+
+```{r}
+percentage_wins <- wncaa_champ %>%
+  group_by(school) %>%
+  summarize(N = n()) %>%
+  mutate(percent = N / sum(N),
+         pct = round(percent*100), 0)
+```
+
+```{r}
+ggplot(data = percentage_wins, mapping = aes(x = school,
+                                             y = pct)) +
+  geom_col(position = "dodge2", fill = "navy") +
+  scale_y_continuous(limits = c(0, 100)) +
+  coord_flip() +
+  labs(title = "Tourney Wins by %", x = "School", y = "Win %")
+```
+
+## Question 2 
+
+```{r}
+champ_names <- unique(wncaa_champ$school)
+```
+
+```{r}
+winners <- wncaa %>% 
+  filter(school %in% champ_names)
+```
+
+```{r}
+ggplot(data = winners, mapping = aes(x = school,
+                                     y = seed,
+                                     fill = school)) +
+  geom_boxplot(outlier.shape = NA) +
+  coord_flip() +
+  labs(title = "Seeds by School", x = "school", y = "seed", caption = "source: wncaa")
+```
+
+```{r}
+ggplot(data = winners, mapping = aes(x = school,
+                                     y = seed,
+                                     fill = school)) +
+  geom_jitter(alpha = 0.25) +
+  geom_boxplot(outlier.shape = NA) +
+  coord_flip() +
+  labs(title = "Seeds by School", x = "School", y = "Seed", caption = "Source: WNCAA")
+```
+
+```{r}
+top_winners <- winners |>   
+  group_by(school) %>%  
+  mutate(mean_seed = mean(seed)) %>% 
+  ungroup()
+```
+
+```{r}
+ggplot(top_winners, 
+       aes(x = reorder(school, -mean_seed), 
+           y = seed, 
+           fill = school)) +
+  geom_boxplot(outlier.shape = NA) +
+  geom_jitter(alpha = 0.25) +
+  coord_flip() +
+  labs(title = "Distribution of Seeds by School", x = "School", y = "Seed", caption = "Source: WNCAA")
+```
+
+From this new graph, I can see that higher seeds (closer to 1) have few outliers, which makes sense because these seeds have won the most titles (i.e. UConn, Tennessee)
+
+```{r}
+ggplot(top_winners, 
+       aes(x = reorder(school, -mean_seed), 
+           y = seed, 
+           fill = school)) +
+  geom_violin() +
+  coord_flip() +
+  labs(title = "Distribution of Seeds by School", x = "School", y = "Seed", caption = "Source: WNCAA")
+```
+
+I would say the previous graphs with the box plots are more informative because it clearly establishes a median and the number of outliers of each team. The "geom_violin" graph is a more "summarized" version of the box plot graphs that makes the locations of outliers and medians less clear.
+
+## Question 3
+
+```{r}
+ggplot(top_winners, 
+       aes(x = reorder(school, -mean_seed), 
+           y = seed, 
+           fill = school)) +
+  geom_point() +
+  geom_jitter(alpha = 0.25) +
+  coord_flip() +
+  labs(title = "Distribution of Seeds by School", x = "School", y = "Seed", caption = "Source: WNCAA")
+
+
+```
+
+Using geom_point, the above graph doesn't clearly show the medians and outliers of the different seeds by school.
+
+## Question 4
+
+```{r}
+winners_mean_sd <- winners |> 
+  group_by(school) |> 
+  summarize(across(where(is.numeric),
+                   list(mean = mean,
+                        sd = sd)))
+```
+
+```{r}
+ggplot(winners_mean_sd,
+        mapping = aes(x = reorder(school, reg_percent_mean, na.rm = TRUE),
+                      y = reg_percent_mean)) +
+  geom_point() +
+  coord_flip() +
+  labs(title = "Reg Season Win % by School", x = "School", y = "Avg Reg Season Win %", caption = "source: WNCAA")
+```
+
+Analyzing the graph above, I can see that Texas A&M had the lowest average regular season win percentage with a win percentage of about 74%. UConn had the highest with an average regular season win percentage of about 91%.
+
+```{r}
+ggplot(winners_mean_sd,
+        mapping = aes(x = reorder(school, reg_percent_mean, na.rm = TRUE),
+                      y = reg_percent_mean)) +
+  geom_pointrange(mapping = aes(ymin = reg_percent_mean - reg_percent_sd,
+                                ymax = reg_percent_mean + reg_percent_sd)) +
+  coord_flip() +
+  labs(title = "Reg Season Win % by School with SD", x = "School", y = "Avg Reg Season Win %", caption = "source: WNCAA")
+```
+
+The school with the narrowest interval is Texas A&M.
+
+```{r}
+ggplot(winners_mean_sd,
+        mapping = aes(x = reorder(school, reg_percent_mean, na.rm = TRUE),
+                      y = reg_percent_mean)) +
+  geom_linerange(mapping = aes(ymin = reg_percent_mean - reg_percent_sd,
+                               ymax = reg_percent_mean + reg_percent_sd)) +
+  coord_flip() +
+  labs(title = "Reg Season Win % by School with SD", x = "School", y = "Avg Reg Season Win %", caption = "source: WNCAA")
+```
+
+This graph seems similar, but isn't useful because it provide the mean of the regular season average win percentage.
