@@ -1,0 +1,111 @@
+---
+title: "inclasspractice"
+format: html
+editor: visual
+embed-resources: true
+---
+
+```{r}
+```
+
+## In Class Practice
+
+```{r}
+library(tidyverse)
+library(moderndive)
+library(ggthemes)
+library(patchwork)
+theme_set(theme_light())
+```
+
+```{r}
+data(evals)
+glimpse(evals)
+```
+
+```{r}
+beauty_pop <- evals |>
+  rename(bty = bty_avg,
+         sex = gender)
+beauty_pop
+```
+
+```{r}
+library(skimr)
+beauty_pop
+```
+
+```{r}
+ggplot(data = beauty_pop,
+       mapping = aes(x = bty,
+                     y=score)) +
+  geom_jitter(alpha =.3)
+```
+
+```{r}
+beauty_pop |> get_correlation(score ~ bty)
+```
+
+## ModernDive Functions
+
+```{r}
+mod1 <- lm(score ~ bty,
+           data = beauty_pop)
+get_regression_table(mod1)
+```
+
+```{r}
+ggplot(beauty_pop,
+       aes(x = bty,
+           y = score)) +
+  geom_jitter(alpha =.3) +
+  geom_smooth(method = "lm",
+              se = FALSE)
+```
+
+```{r}
+ggplot(beauty_pop,
+       aes(x = bty,
+           y = sex)) +
+  geom_jitter(alpha =.3,
+              height = .2)
+  
+```
+
+```{r}
+ggplot(beauty_pop,
+       aes(x = score,
+           y = sex)) +
+  geom_jitter(alpha =.35,
+              height = .2) +
+  geom_boxplot(coef = 0,
+               outlier.alpha = 0,
+               width =0.5)
+  
+```
+
+```{r}
+
+```
+
+```{r}
+
+```
+
+```{r}
+ggplot(data = beauty_pop, mapping = aes(x = ethnicity, y = bty)) + 
+  geom_point() +
+labs(x = "Ethnicity", y = "Beauty",
+       title = "Relationship between Ethnicity and Beauty Scale") +  
+  geom_smooth(method = "gam", se = FALSE)
+```
+
+```{r}
+ggplot(data = beauty_pop, mapping = aes(x = score, y = bty, fill = ethnicity, color = ethnicity)) + 
+  geom_point(color = "navy", fill = "grey") +
+labs(x = "Score", y = "Beauty",
+       title = "Relationship between Beauty Score by Ethnicity") +  
+  geom_smooth(method = "gam", se = FALSE) 
+```
+
+I tried lol
