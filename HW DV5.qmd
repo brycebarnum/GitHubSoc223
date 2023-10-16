@@ -164,3 +164,7 @@ ggplot(winners_mean_sd,
 ```
 
 This graph seems similar, but isn't useful because it provide the mean of the regular season average win percentage.
+
+```{r}
+
+```
