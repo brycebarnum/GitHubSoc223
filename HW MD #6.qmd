@@ -1,0 +1,223 @@
+---
+title: "HW MD 6"
+format: html
+editor: visual
+embed-resources: true
+---
+
+## MD Chapter 6 HW
+
+## Bryce Barnum
+
+```{r}
+#/ message: false
+library(tidyverse)
+# Set our ggplot theme from the outset
+theme_set(theme_light())
+# Read in the data 
+gender_employment <- read_csv("https://raw.githubusercontent.com/vaiseys/dav-course/main/Data/gender_employment.csv")
+
+# Glimpse at the data 
+glimpse(gender_employment)
+```
+
+```{r}
+library(broom)
+```
+
+```{r}
+gender_employment%>% 
+  ggplot(aes(x = year, y = wage_percent_of_male)) +
+  geom_jitter(alpha = 0.1) + 
+  geom_smooth(method = "lm") + 
+  labs(title = "Women's earnings with respect to men's", 
+       y = "% of Men's Income", 
+       x = "Year")
+```
+
+## Question 1
+
+```{r}
+gender_employment <- gender_employment %>% 
+  mutate(major_category = as.factor(major_category), 
+         major_category = relevel(major_category, ref = "Management, Business, and Financial"))
+```
+
+```{r}
+parellel_model <- lm(wage_percent_of_male ~ year + 
+                       major_category,
+          data = gender_employment)
+
+broom::tidy(parellel_model)
+```
+
+For every year, we expect the wage percentage for males to go up 0.20 or 20%.
+
+```{r}
+parellel_model <- lm(wage_percent_of_male ~ year + major_category,
+data = gender_employment)
+broom::tidy(parellel_model)
+parellel_model
+```
+
+Based on the model, I can see that the overall trend is positive due to the slopes of each category being positive.
+
+Wage percentage of male income for Sales and Office occupations in 2015:
+
+-306.7184 + (2015).1922 + 3.3261 = 83.8907 %
+
+Wage percentage of male income for Service Occupations in 2016:
+
+-306.7184 + (2016).1922 + 6.0770 = 86.8338 %
+
+## Question 2
+
+```{r}
+gender_employment%>% 
+  ggplot(aes(x = year, y = wage_percent_of_male)) +
+  geom_jitter(alpha = 0.1) + 
+  geom_smooth(method = "lm") + 
+  facet_wrap(~major_category)
+  labs(title = "Women's earnings with respect to men's per Major Category", 
+       y = "% of Men's Income", 
+       x = "Year")
+```
+
+Based on the graphs of the different major categories, the parallel trends assumption is not warranted due to some of the lines having upwards or positive slopes and some that go down or negative slopes.
+
+## Question 3
+
+```{r}
+model2 <- lm(wage_percent_of_male ~ year + major_category +
+               year:major_category,
+data = gender_employment)
+
+broom::tidy(model2)
+
+model2
+
+```
+
+The model represents the relationship between major category in occupation and the year.
+
+Estimated Wage Percentage for Computer, Engineering, and Science occupations:
+
+-1370.4719 + .7203(2016) + 1002.8532 + 2016(-0.4947) = 87.1909%
+
+Estimated Wage Percentage for Service Occupations
+
+-1370.4719 + .7203(2016) + 2137.6501 + 2016(-1.0581) = 86.1734%
+
+There is about a 1% difference between the estimated wage percentages of Service occupations and Computer, Engineering, and Science occupations. You are expected to make a higher wage if you work in the Computer, Engineering, and Science category over the Service occupation catgeory.
+
+## Question 4
+
+It's important to build a model with parallel trends because we get to see how different intercepts affect the trajectory of the line while all keeping the same slope. In other words, we can say that one category has a higher or lower dependent variable (y) than another another category.
+
+## Question 5
+
+```{r}
+simple_fit <- lm(wage_percent_of_male ~ year ,
+data = gender_employment)
+broom::tidy(simple_fit)
+```
+
+```{r}
+simple_fit
+```
+
+The results show us the relationship between the wage percentage of a male and the year they worked in.
+
+-321.8324 +0.2015 (year) = ...
+
+This tells us that the wage percentage for a male worker is expected to increase by about .20.
+
+```{r}
+gender_employment |> 
+  select(year, wage_percent_of_male, percent_female) |> 
+  cor(use = "complete.obs")
+```
+
+Both of the relationships between male and wage percentage by year (0.024038950), as well as women and wage percentage by year (0.004998286), is a small linear correlation as both values are close to 0 but still are positive.
+
+The relationship between wage percentage of male and female alone, however, is slightly larger with a coefficient of 0.111.
+
+```{r}
+multiple_fit <- lm(wage_percent_of_male ~ year*percent_female, data = gender_employment)
+
+broom::tidy(multiple_fit)
+```
+
+The relationship for the multiple_fit linear model regarding females can be explained as
+
+-800.111 + 0.438 (year) + 10.367(percent_female) + (-0.005)(year)(percent_female).
+
+This tells us that the higher the percentage of women in an occupation, the lower the pay gap. This also correlates to the wage percentage of males, as the more women there are, the higher the wage percentage of males will be in a given occupation.
+
+In a given occupation, if you have men and women working the same jobs, then I would expect the pay gap to be small.
+
+## Question 6
+
+R squared is used to tell how much variation of the dependent variable is in relation to an explnataory variable explained by a linear model. This is also known as the coefficient determination.
+
+```{r}
+library(broom)
+```
+
+```{r}
+simple_glanced <- glance(simple_fit)
+simple_glanced$r.squared
+```
+
+```{r}
+multiple_glanced <- glance(multiple_fit)
+multiple_glanced$r.squared
+```
+
+The R squared value for the "simple_fit" model is :
+
+```         
+0.0005778711
+```
+
+The R squared value for the "multiple_fit" model is:
+
+```         
+0.01321338
+```
+
+Based on the information above, we can see that the multiple_fit model has a higher R squared value than the simple fit model. Therefore, with what we know about R squared, we can conclude that the multiple_fit model explains more variation of the dependent variable than the simple_fit model.
+
+## WARNING
+
+```{r}
+random_numbers <- rnorm(n = nrow(gender_employment), 
+                        mean = 0, 
+                        sd = 4)
+```
+
+```{r}
+gender_employment$random_noise <- random_numbers
+
+# New model 
+random_fit <- lm(wage_percent_of_male ~ year + percent_female + random_noise, data = gender_employment)
+
+```
+
+```{r}
+random_glanced <- glance(random_fit)
+
+random_glanced$r.squared
+```
+
+```{r}
+new_fit <- lm(wage_percent_of_male ~ year + percent_female, data = gender_employment)
+
+new_glanced <- glance(new_fit)
+
+new_glanced$r.squared
+
+
+```
+
+With the implementation of "random noise" into our random_fit model, we get a higher R squared value than if were to not have it.
