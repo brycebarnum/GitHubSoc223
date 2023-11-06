@@ -1,0 +1,12 @@
+---
+title: "project-idea"
+format: html
+editor: visual
+embed-resources: true
+---
+
+## Project Idea
+
+Back in my high school days, one of my main hobbies was to play video games. I remember one day on the internet I came across an article that said how the US ARMY would use Call of Duty players as a recruiting tool. For my final project, I would like to tackle the validity of this statement. How much does a virtual game play into getting into the army? One of the data-sets I will be using is data-set from kaggle.com analyzing Call of Duty players' skills.
+
+https://www.kaggle.com/datasets/aishahakami/call-of-duty-players
