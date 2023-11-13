@@ -1,0 +1,163 @@
+---
+title: "HW MD 7"
+format: html
+editor: visual
+embed-resources: true
+---
+
+## Homework MD
+
+```{r}
+library(tidyverse)
+library(here)
+library(moderndive)
+theme_set(theme_minimal())
+
+
+nobel_winners <- read_csv("https://raw.githubusercontent.com/vaiseys/dav-course/main/Data/nobel_winners.csv")
+```
+
+```{r}
+nobel_winners_flt <- nobel_winners %>% 
+  filter(category != "Peace") %>% 
+  mutate(is_us = if_else(birth_country == "United States of America", 1, 0))
+```
+
+```{r}
+true_prop <- nobel_winners_flt %>% 
+  group_by(is_us) %>% 
+  summarise(prop = n()/nrow(nobel_winners_flt))
+
+ggplot() + 
+  coord_cartesian(xlim = c(0,1), ylim = c(0,1)) + 
+  geom_vline(xintercept = true_prop[2,2][[1]], linetype = "dashed")  + 
+  labs(x = "Proportion")
+
+```
+
+```{r}
+set.seed(33)
+# Random sample 
+our_sample <- sample_n(nobel_winners_flt, 
+                       size = 25, 
+                       replace = F)
+
+sample_prop <- our_sample %>% 
+  group_by(is_us) %>% 
+  summarise(prop = n()/nrow(our_sample))
+
+# How does our proportion look like? 
+ggplot() + 
+  coord_cartesian(xlim = c(0,1), ylim = c(0,1)) + 
+  geom_vline(xintercept = true_prop[2,2][[1]], linetype = "dashed")  + 
+  geom_vline(xintercept = sample_prop[2,2][[1]], linetype = "dotted", col = "red") +
+  labs(x = "Proportion")
+
+```
+
+```{r}
+sample_prop
+```
+
+## Question 1
+
+-   Nobel Prize Winners years 1901 - 2016.
+
+```{=html}
+<!-- -->
+```
+-   Nobel Prize Winners
+
+```{=html}
+<!-- -->
+```
+-   The black line represents the overall proportion of U.S Non-Peace Nobel Prize winners out of all of the Nobel Prize winners.
+
+-   The red line represents the proportion of Non-Peace Nobel Prize winners that were born in the US out of a *sample* of 25 Non-Peace Nobel Prize winners.
+
+## Question 2
+
+```{r}
+fifty_propershovel <- 
+  nobel_winners_flt|> 
+  rep_sample_n(size = 25,
+               reps = 50) |>
+  group_by(replicate) |>
+  summarise(prop = sum(is_us)/25)
+```
+
+```{r}
+ggplot(data = fifty_propershovel, 
+       mapping = aes(x = prop))+
+  geom_histogram(binwidth = 0.02, color = "navy")+
+  geom_vline(aes(xintercept = mean(prop)),
+             color="grey", linetype="dashed", size=.5) +
+  labs(x = "Proportion")
+```
+
+## Question 3
+
+```{r}
+hunnid_propershovel <- 
+  nobel_winners_flt|> 
+  rep_sample_n(size = 100,
+               reps = 50) |>
+  group_by(replicate) |>
+  summarise(prop = sum(is_us)/100)
+```
+
+```{r}
+ggplot(data = hunnid_propershovel, 
+       mapping = aes(x = prop))+
+  geom_histogram(binwidth = 0.02, color = "navy")+
+  geom_vline(aes(xintercept = mean(prop)),
+             color="grey", linetype="dashed", size=.5) +
+  labs(x = "Proportion")
+```
+
+There appears to be more variety in the distribution with 50 samples of 25 winners each over the distribution with 50 samples and 100 winners each. I think this is because as sample size increases, the variety of sampling distribution decreases.
+
+## Question 4
+
+```{r}
+std25 <- fifty_propershovel$prop      
+
+sd(std25) 
+```
+
+```{r}
+std100 <- hunnid_propershovel$prop      
+
+sd(std100) 
+
+```
+
+The standard deviation tells above proves that the larger the sample size the lower the variation and therefore the lower the standard deviation.
+
+## Question 5
+
+```{r}
+nobelwinners_women<- nobel_winners_flt |>
+  mutate(gender1 = if_else(gender=="Female",1,0))
+```
+
+```{r}
+female_100 <- nobelwinners_women |> 
+  rep_sample_n(size = 100,
+               reps = 50) |>
+  group_by(replicate) |>
+  summarise(prop = sum(gender1)/100)
+
+ggplot(data =female_100, 
+       mapping = aes(x = prop)) +
+  geom_histogram(binwidth = 0.02, color = "navy") +
+  geom_vline(aes(xintercept = mean(prop)),
+             color="grey", linetype="dashed", size=.5) +
+  labs(x = "Proportion")
+```
+
+The proportion of women who have won the Nobel Prize is about 0.038-0.039.
+
+## Question 6
+
+The central limit theorem is a theorem that states that as a sample size increases, the distribution of averages will appear more 'normal' and narrower. This will represent more of a bell-like function, and the higher sample size will more closely represent the true mean of a population's whole.
