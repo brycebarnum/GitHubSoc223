@@ -115,7 +115,7 @@ ggplot(data = hunnid_propershovel,
   labs(x = "Proportion")
 ```
 
-There appears to be more variety in the distribution with 50 samples of 25 winners each over the distribution with 50 samples and 100 winners each. I think this is because as sample size increases, the variety of sampling distribution decreases.
+There appears to be more variety in the distribution with 50 samples of 25 winners each over the distribution with 50 samples and 100 winners each. I think this is because as sample size increases, the variety of sampling distribution decreases, and we get more values closer to the average.
 
 ## Question 4
 
@@ -137,6 +137,21 @@ The standard deviation tells above proves that the larger the sample size the lo
 ## Question 5
 
 ```{r}
+female_100 <- nobelwinners_women |> 
+  rep_sample_n(size = 25,
+               reps = 50) |>
+  group_by(replicate) |>
+  summarise(prop = sum(gender1)/100)
+
+ggplot(data =female_100, 
+       mapping = aes(x = prop)) +
+  geom_histogram(binwidth = 0.02, color = "navy") +
+  geom_vline(aes(xintercept = mean(prop)),
+             color="grey", linetype="dashed", size=.5) +
+  labs(x = "Proportion")
+```
+
+```{r}
 nobelwinners_women<- nobel_winners_flt |>
   mutate(gender1 = if_else(gender=="Female",1,0))
 ```
@@ -156,7 +171,7 @@ ggplot(data =female_100,
   labs(x = "Proportion")
 ```
 
-The proportion of women who have won the Nobel Prize is about 0.038-0.039.
+The proportion of women who have won the Nobel Prize is about 0.038-0.039 out of a sample of 100 scientists.
 
 ## Question 6
 
