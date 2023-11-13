@@ -63,14 +63,12 @@ sample_prop
 
 -   Nobel Prize Winners years 1901 - 2016.
 
-```{=html}
 <!-- -->
-```
+
 -   Nobel Prize Winners
 
-```{=html}
 <!-- -->
-```
+
 -   The black line represents the overall proportion of U.S Non-Peace Nobel Prize winners out of all of the Nobel Prize winners.
 
 -   The red line represents the proportion of Non-Peace Nobel Prize winners that were born in the US out of a *sample* of 25 Non-Peace Nobel Prize winners.
@@ -137,6 +135,11 @@ The standard deviation tells above proves that the larger the sample size the lo
 ## Question 5
 
 ```{r}
+nobelwinners_women<- nobel_winners_flt |>
+  mutate(gender1 = if_else(gender=="Female",1,0))
+```
+
+```{r}
 female_100 <- nobelwinners_women |> 
   rep_sample_n(size = 25,
                reps = 50) |>
@@ -149,11 +152,6 @@ ggplot(data =female_100,
   geom_vline(aes(xintercept = mean(prop)),
              color="grey", linetype="dashed", size=.5) +
   labs(x = "Proportion")
-```
-
-```{r}
-nobelwinners_women<- nobel_winners_flt |>
-  mutate(gender1 = if_else(gender=="Female",1,0))
 ```
 
 ```{r}
