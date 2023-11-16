@@ -1,0 +1,24 @@
+---
+title: "lecture 11/14"
+format: html
+editor: visual
+embed-resources: true
+---
+
+## lecture 11/14
+
+```{r}
+library(infer)
+```
+
+bootstrapping helps understand the uncertainty
+
+95% Confidence Interval: Cutting off the lowest 2.5% and the highest 2.5% of the data set of estimates to get the true mean value.
+
+The standard error method forces the results to be symmetrical, enforces the symmetry of the confidence interval
+
+```{r}
+
+```
+
+Final Project Notes: Always talk about the specific differences, give values, dont give yes/no answers
