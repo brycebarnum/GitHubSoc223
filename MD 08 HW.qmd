@@ -1,0 +1,30 @@
+---
+title: "md 08"
+format: html
+editor: visual
+embed-resources: true
+---
+
+## HW MD 08
+
+```{r}
+library(tidyverse)
+library(infer)
+library(moderndive)
+```
+
+## Question 1
+
+```{r}
+set.seed(1108)
+
+poll <- tibble(
+  vote_gop = rbinom(n = 1000,
+                    size = 1,
+                    prob = .53))
+
+```
+
+```{r}
+
+```

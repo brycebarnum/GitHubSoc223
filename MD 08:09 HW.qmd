@@ -1,0 +1,199 @@
+---
+title: "md 08"
+format: html
+editor: visual
+embed-resources: true
+---
+
+## HW MD 08 and 09
+
+```{r}
+#/ message: false
+library(tidyverse)
+library(infer)
+library(moderndive)
+```
+
+## Question 1
+
+```{r}
+set.seed(1108)
+
+poll <- tibble(
+  vote_gop = rbinom(n = 1000,
+                    size = 1,
+                    prob = .53))
+
+```
+
+[Bootstrapping First Way]{.underline}
+
+```{r}
+firstway_boot <- poll |> 
+  rep_sample_n(size = 100, 
+               replace = TRUE, 
+               reps = 1000) |> 
+  group_by(replicate) |> 
+  summarize(prop_gop = mean(vote_gop)) 
+```
+
+```{r}
+quantile(firstway_boot$prop_gop, c(.025, .975))
+```
+
+This first method gives me a 95% percentile-based confidence interval of (0.41 and 0.61).
+
+[Bootstrapping Second Way]{.underline}
+
+```{r}
+secondway_boot <- poll |> 
+  specify(response = vote_gop) |>   
+  generate(reps = 1000) |> 
+  calculate(stat = "mean")  
+```
+
+```{r}
+print(secondway_boot)
+```
+
+```{r}
+glimpse(secondway_boot)
+```
+
+```{r}
+graphboot_2 <- secondway_boot |> 
+  get_ci(level = .95)
+
+
+secondway_boot |> 
+  visualize() + shade_confidence_interval(graphboot_2)
+```
+
+Based on this helpful histogram, I'm able to visualize the percentile-based confidence interval using the second method which is (0.482 and 0.548).
+
+Although the conference intervals are simialr, the two aren't identical. This is because we didn't use the set.seed function. This causes sampling variability, and in the case of this data set, the proportion of Republican voters is expected to vary.
+
+## History of Rap
+
+```{r}
+rap_poll <- read_csv("https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2020/2020-04-14/polls.csv")
+```
+
+```{r}
+uno_songs <- rap_poll %>% 
+  filter(rank == 1)
+```
+
+## Question 2
+
+```{r}
+uno_years <- ggplot(data = uno_songs, 
+                mapping = aes(x = year)) +
+  geom_histogram(binwidth = 1,
+                 center = 0) +
+  labs(title = "Year of #1 Rap Song",
+       x = "Year",
+       y = "Number of Songs")
+uno_years
+```
+
+In the year 1994, there were 14 songs that were #1 by critics in the critic poll.
+
+### Question 3
+
+```{r}
+set.seed(10)
+
+confidence_rap <- uno_songs |> 
+  rep_sample_n(size = 107, replace = TRUE, reps = 1000) |> 
+  group_by(replicate) |> 
+  summarize(mean_year = mean(year)) 
+
+quantile(confidence_rap$mean_year, c(.025, .975))
+
+
+```
+
+The lower bound year is 1993, and then upper bound year is 1996.
+
+## Question 4
+
+```{r}
+set.seed(10)
+
+confidence_rap2 <- uno_songs |> 
+  rep_sample_n(size = 25, replace = TRUE, reps = 1000) |> 
+  group_by(replicate) |> 
+  summarize(mean_year = mean(year)) 
+
+quantile(confidence_rap2$mean_year, c(.025, .975))
+
+
+```
+
+The lower bound is 1992 and the upper bound is 1998. The conference interval here is larger or wider than the confidence interval from question 3 because the sample size is smaller. The smaller the sample size, the more variation there is.
+
+\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\--
+
+## Chapter 09
+
+```{r}
+pl_data <- read_csv("https://raw.githubusercontent.com/vaiseys/dav-course/main/Data/premier_league.csv")
+glimpse(pl_data)
+```
+
+```{r}
+pl_data |> 
+  filter(result == "hw") |> 
+  summarize(proportion_of_hw = n() / nrow(pl_data))
+```
+
+Here we can see the proportion of home wins is 0.413.
+
+## Question 6
+
+```{r}
+set.seed(22)
+
+sampled_proportions <- c()
+
+for (i in 1:1000) {
+  
+  sampled_results <- sample(c("aw", "hw" , "d"), 
+                            size = 380,
+                            replace = TRUE, 
+                            prob = c(1/3,1/3,1/3))
+  prop <- sum(sampled_results == "hw")/380
+  sampled_proportions[i] <- prop
+  
+}
+```
+
+```{r}
+proportions_mapdf <- data.frame(Proportion = sampled_proportions)
+```
+
+```{r}
+proportions_graph <- ggplot(proportions_mapdf,
+                            aes(x = Proportion)) + 
+  geom_histogram(binwidth = 0.01, boundary = 0.1, color = "navy") +
+  labs(title = "Proportions with Equal Probability Results",
+       x = "The Proportion",
+       y = "Number of Proportions")
+proportions_graph
+```
+
+I would say the histogram above roughly represents a 'normal' distribution, as we see a bell-shaped histogram. This is a result of our large sample size. Based on our proportion in question 5, we have a smaller proportion here than the one above, meaning we can assume that home wins are actually more probable.
+
+## Question 7
+
+```{r}
+proportions_mapdf |> 
+  summarize(mean_hw = (mean(proportions)))
+```
+
+A null hypothesis represents a hypothesus that has no effect or no relationship between variables. An alternative hypothesis has an effect or relationship in the population. In this case, the null hypothesis is that there isn't a difference in the proportion of home wins compared to loses or draws, or the relationship is the same. This is what we see in question 6. However, in question 5 we see what an alternative hypothesis looks like, where the home and away teams win at different rates, typically the home team having higher winning rates.
+
+## Question 8
+
+The p-value is a measure to test the strength of evidence against a null hypothesis. In this scenario, the p-value is the probability that home wins is just as or more extreme than the proportion of away wins or draws (ties) when we assume all three possible results are equally probable and the relationship is the same.
