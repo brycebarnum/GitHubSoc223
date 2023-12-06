@@ -1,0 +1,297 @@
+---
+title: "Final Project"
+format: html
+editor: visual
+embed-resources: true
+echo: false
+warning: false
+message: false
+---
+
+## [A Look into Age and Performance in the Premier League]{.underline}
+
+### Bryce Barnum 
+
+### Soc 223
+
+### Professor Vaisey
+
+## Introduction
+
+As we age, playing sports at a top-notch level becomes tougher. Our bodies change, and what used to be easy becomes a bit more challenging. This can have an effect on athlete's stats and results as they grow older, but how does this relate at the highest level?
+
+I wanted to examine the relationship between age and a player's success in the Premier League, the biggest and best professional football league in the world. My hypothesis is that as a player gets older, they slowly start to increase in their performance, until reaching a peak, and then their performance starts to significantly decrease.
+
+My data consists of player information and statistics from all clubs in the Premier League from the 2020 season. This includes a player's name, position, age, appearances, goals, wins, losses, tackles, shots, etc.
+
+## Data
+
+Let's load in some packages.
+
+```{r}
+#/ message: false
+library(tidyverse)
+library(tidyselect)
+library(tidyr)
+library(moderndive)
+library(infer)
+library(dplyr)
+```
+
+Now, I will load in the data set of player statistics from the 2020 Premier League season.
+
+```{r}
+premierdata <- read_csv("premierleague.csv")
+```
+
+First, lets look at age across the Premier League
+
+```{r}
+library(tidyverse)
+age_prem <- premierdata %>%
+  filter(Age > 1)
+```
+
+```{r}
+ggplot(data = age_prem, 
+       mapping = aes(x = Age))+
+  geom_histogram(binwidth = 0.30, color = "navy") +
+  labs(title =  "Age Across the Premier League in 2020" )
+```
+
+Let's also take a look at the minimum age value, maximum age value, as well as the mean age value and standard deviation.
+
+```{r}
+summary_age <- age_prem %>% 
+  summarize(mean = mean(Age, na.rm = TRUE), 
+            std_dev = sd(Age, na.rm = TRUE),
+            min = min(Age, na.rm = TRUE), 
+            max = max(Age, na.rm = TRUE)) |>
+  knitr::kable(digits = 2)
+
+```
+
+```{r}
+summary_age
+```
+
+Here, we can see that in the Premier League, the youngest player was 17 and the oldest player was 38. In addition, the mean or average is about 26 years old, with a standard deviation of about 4-4.3.
+
+## The Success Metric
+
+The purpose of my project is to see the relationship between age and "success" from players in the Premier League. But how will I determine how an *individual* is successful in the premier league?
+
+The success metric I have set forth is determined by taking a bunch of key variables from the Premier League data-set and adding the values together into one total score. I determined what variables I believed were most important in the game of football, as well as making sure to include a balance of more offensive traits and defensive traits to cater towards all field players. The variables being used will be:
+
+***Goals***
+
+***Assists***
+
+***Tackles***
+
+***Interceptions***
+
+Unfortunately, due to my project's goal and limitations, we will be removing goalkeepers from the data-set, as they will have low values in the different variables for success and ultimately will have a low score on the success metric. Let's filter out the goalkeeper position.
+
+```{r}
+success_prem <- age_prem %>%
+  filter(Position != "Goalkeeper")
+```
+
+## Success Metric
+
+Now we can begin making the success metric.
+
+```{r}
+success_prem <- success_prem %>%
+  mutate(success_metric = (Goals + Assists + Interceptions + Tackles))
+```
+
+It's also important that I provide the log of the success metric to provide a more "normalized" distribution and prevent the skewness of a measurement variable.
+
+```{r}
+success_prem <- success_prem %>%
+  filter(success_metric!=0) %>%
+  mutate(logsuccess_metric = log(success_metric))
+```
+
+Now we can compare the difference between the success metric and the "log-success" metric.
+
+```{r}
+only_success <- success_prem %>%
+  select(success_metric)
+
+only_success
+```
+
+```{r}
+logonly_success <- success_prem %>%
+  select(logsuccess_metric)
+
+logonly_success
+```
+
+Now, we are able to see every player's (except goalkeepers) score on my success metric. Now, let's view it by Name, Club, Position, and Age and graph both the base and log relationships.
+
+```{r}
+only_success <- success_prem %>%
+  select(success_metric, Name, Club, Position, Age) %>%
+  arrange(Age)
+
+only_success
+```
+
+```{r}
+ggplot(data = only_success, mapping = aes(x = success_metric)) +
+  geom_histogram(color = "navy", bins = 50) + 
+  labs(title = "Success Metric Across the Premier League")
+```
+
+```{r}
+logonly_success <- success_prem %>%
+  select(logsuccess_metric, Name, Club, Position, Age) %>%
+  arrange(Age)
+
+logonly_success
+```
+
+```{r}
+ggplot(data = logonly_success, mapping = aes(x = logsuccess_metric)) +
+  geom_histogram(color = "grey", bins = 50) +
+  labs(title = "Logorithmic Sucess Metric Across the Premier League 2020")
+```
+
+Looking at the two graphs, we can clearly see that Logarithmic Success Metric histogram provides a more appealing display of the relationship between age and success. This is due to its more normalized shape.
+
+## Defenders
+
+Let's look at only defenders and their success metric scores.
+
+```{r}
+defender_success <- logonly_success %>%
+  filter(Position == "Defender")
+  
+defender_success
+```
+
+```{r}
+summary_defenders <- defender_success %>% 
+  summarize(mean = mean(logsuccess_metric, na.rm = TRUE), 
+            std_dev = sd(logsuccess_metric, na.rm = TRUE),
+            min = min(logsuccess_metric, na.rm = TRUE), 
+            max = max(logsuccess_metric, na.rm = TRUE)) |>
+  knitr::kable(digits = 2)
+
+summary_defenders
+
+```
+
+Out of the defenders, the average or mean of the success metric is 4.82, with a standard deviation of 1.59. The lowest value was 0 and the highest score was 7.21.
+
+## Midfielders
+
+Let's look at only midfielders and their success metric scores.
+
+```{r}
+midfielder_success <- logonly_success %>%
+  filter(Position == "Midfielder")
+  
+midfielder_success
+```
+
+```{r}
+summary_midfielders <- midfielder_success %>% 
+  summarize(mean = mean(logsuccess_metric, na.rm = TRUE), 
+            std_dev = sd(logsuccess_metric, na.rm = TRUE),
+            min = min(logsuccess_metric, na.rm = TRUE), 
+            max = max(logsuccess_metric, na.rm = TRUE)) |>
+  knitr::kable(digits = 2)
+
+summary_midfielders
+```
+
+Out of the midfielders, the mean or average of the success metric was 4.45 with a standard deviation of 1.7. The lowest value was 0 and the highest value was 7.32.
+
+## Forwards
+
+Let's look at only forwards and their success metric scores.
+
+```{r}
+forward_success <- logonly_success %>%
+  filter(Position == "Forward")
+  
+forward_success
+```
+
+```{r}
+summary_forwards <- forward_success %>% 
+  summarize(mean = mean(logsuccess_metric, na.rm = TRUE), 
+            std_dev = sd(logsuccess_metric, na.rm = TRUE),
+            min = min(logsuccess_metric, na.rm = TRUE), 
+            max = max(logsuccess_metric, na.rm = TRUE)) |>
+  knitr::kable(digits = 2)
+
+summary_forwards
+```
+
+Out of the forwards, the mean or average of the success metric was 4.12 with a standard deviation of 1.45. The lowest value was 0 and the highest value was 6.26.
+
+## Position Results
+
+Surprisingly, the forward position had the least average value and smallest maximum value. However, it does make sense that the midfielder position had the highest maximum score. The way a midfielder operates is in their name, the middle of the field. Therefore, they have a lot of involvement on both sides of the ball (offense and defense).
+
+## Linear Regression
+
+Let's look at a scatter plot of the relationship between our success metric and age.
+
+```{r}
+ggplot(data = logonly_success, mapping = aes(x = Age, y = logsuccess_metric)) + 
+  geom_point(alpha = 0.7) +
+  labs(title = "Scatterplot of the Relationship Between Age and Success 
+       in the Premier League 2020",
+       x = "Age",
+       y = "Success Metric")
+```
+
+Next, let's plot a regression to see our relationship.
+
+```{r}
+ggplot(data = logonly_success, mapping = aes(x = Age, y = logsuccess_metric)) + 
+  geom_point(alpha = 0.7) + 
+labs(x = "Age", y = "Success Metric",
+       title = "Relationship Between Age and Success 
+     in the Premier League 2020") +  
+  geom_smooth(method = "lm", se = FALSE)
+```
+
+```{r}
+# Fit regression model:
+premscore_model <- lm(logsuccess_metric ~ Age, data = logonly_success)
+# Get regression table:
+get_regression_table(premscore_model) |>
+  knitr::kable(digits = 2)
+```
+
+```{r}
+success_mean <- logonly_success %>% 
+  summarize(mean_success = mean(logsuccess_metric)) |>
+  knitr::kable(digits = 2)
+
+success_mean
+```
+
+The table above tells us some useful information, such as the conference interval tells us that every time the success metric changes, the change is somewhere between 0.20 and 0.26. In addition, we see that the mean or average of the success metric is about 4.51.
+
+What's interesting is the graph. The graph shows a linear relationship between success and age in the Premier League, instead of a more parabolic shape. Why is this the case? Shouldn't as you get older, your stats, performance, and overall "success" decrease?
+
+## Discussion/Conclusion
+
+We see that as age increases, player's only become more successful in the Premier League. However, based on the data and results shown, it appears that the Premier League doesn't show that the relationship between age and success metric is parabolic or squared. This is maybe because the premier league is top tier. Players that age older get removed from the premier league, so we don't get to see them drop off. This is why we see great players like Messi, go to lower leagues such as the MLS (shame to say). Therefore, it's safe to assume that when players reach around the 35 year old mark, they transfer out of the Premier League and into different, 'lower-level' leagues.
+
+## Future Directions and Final Thoughts
+
+A further study of my project would be analyzing how different the "success metric" would be if I changed the variables (categories that made the success metric) and how it affected the average, min, max, of the different positions.
+
+It'd also be important to look at other leagues across the globe, specifically "lower-level" leagues and see how age compares to players' success.
+
+It's also worth noting that although the logarithmic data presents better visuals of the data, it may make more sense to read success-metric the data in it's base form. This is because it's easy to picture in ones head the number of goals, assists, tackles etc. as a whole number.
